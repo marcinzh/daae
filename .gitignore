@@ -1,0 +1,14 @@
+*.class
+*.log
+dist/
+target/
+.bsp/
+.bloop/
+.metals/
+.vscode
+.tasty
+.cache/
+.history/
+.lib/
+.idea
+.DS_Store
