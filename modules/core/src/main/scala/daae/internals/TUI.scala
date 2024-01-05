@@ -31,8 +31,8 @@ object TUI:
       (
         "║ ".frame + 
         key("Enter", " Resume") + sep +
-        key("Go ", "b", "ack") + sep +
-        key("R", "eplace") + sep +
+        key("Go ", "b", "ack", canGoBack) + sep +
+        key("", "R", "eplace", canReplace) + sep +
         key("Q", "uit") +
         empty(L.pad_cmd) +
         " ║".frame
@@ -47,8 +47,9 @@ object TUI:
     val l = (" " * L.w) + "\n"
     Console.print(u + (l * L.h) + u)
 
-  private def key(a: String, b: String, c: String ): String = a.label + b.highl + c.label
-  private def key(a: String, b: String): String = key("", a, b)
+  private def key(a: String, b: String, x: Boolean = true): String = key("", a, b, x)
+  private def key(a: String, b: String, c: String, x: Boolean): String =
+    if x then a.label + b.highl + c.label else (a + b + c).colored(C.disabl)
   private def sep = " | ".colored(C.deco)
   private def draw(a: String, b: Char, c: String, n: Int): String = a + (b.toString * n) + c
   private def onOff(x: Boolean) = if x then "ON".vary + " ".label else "OFF".vary
@@ -68,7 +69,7 @@ object TUI:
     private def colored(fg: Int, bg: Int = C.backg) = RGB.fg(fg) + RGB.bg(bg) + thiz + Console.RESET
     private def frame = thiz.colored(C.frame)
     private def label = thiz.colored(C.label)
-    private def vary = thiz.colored(C.vary)
+    private def vary  = thiz.colored(C.vary)
     private def highl = Console.BOLD + thiz.colored(C.highl)
 
   private object RGB:
@@ -77,13 +78,14 @@ object TUI:
     private def rgb(n: Int) = s"${(n >> 16) & 255};${(n >> 8) & 255};${n & 255}m"
 
   private object C:
-    val frame   = 0xdddddd
-    val label   = 0xdddddd
-    val backg   = 0x0044cc
-    val deco    = 0x0022aa
-    val vary    = 0xffdd00
-    val highl   = 0x00ffff
-    val tracefg = 0xffffff
-    val tracebg = 0x884488
-    val titlefg = 0xffffff
-    val titlebg = backg
+    val frame     = 0xdddddd
+    val label     = 0xdddddd
+    val disabl    = 0x3377dd
+    val backg     = 0x0044cc
+    val deco      = 0x0022aa
+    val vary      = 0xffdd00
+    val highl     = 0x00ffff
+    val tracefg   = 0xffffff
+    val tracebg   = 0x884488
+    val titlefg   = 0xffffff
+    val titlebg   = backg

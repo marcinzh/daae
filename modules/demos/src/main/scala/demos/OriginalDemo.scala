@@ -1,6 +1,6 @@
 //> using scala "3.3.1"
 //> using dep "io.github.marcinzh::daae-core:0.1.0-SNAPSHOT"
-package examples
+package demos
 import turbolift.effects.Console
 import daae.Debug
 
@@ -14,7 +14,7 @@ object OriginalDemo:
     println:
       (for
         x <- Debug.pausePure("x"):
-          1 + 2
+          1 + 1
         y <- Debug.pause("y"):
           for
             z <- Debug.pausePure("what's this?"):
