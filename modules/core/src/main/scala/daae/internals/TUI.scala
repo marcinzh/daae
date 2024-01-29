@@ -39,7 +39,7 @@ object TUI:
       ),
       draw("╚", '═', "╝", L.bot).frame,
     )
-    .foreach_!!(Console.println)
+    .foreachEff(Console.println)
     .&&!(Console.print(s"$prompt>"))
 
   def hide: Unit !! Console =

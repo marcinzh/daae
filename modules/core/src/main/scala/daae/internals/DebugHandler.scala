@@ -21,15 +21,15 @@ object DebugHandler:
 
       override def onReturn(a: Unknown, s: Stan) = a.pure_!!
 
-      override def trace[A, U <: ThisEffect](label: String)(body: A !! U) =
+      override def traceEff[A, U <: ThisEffect](label: String)(body: A !! U) =
         (k, s) =>
-          k.escapeAndCapture(body, s).flatMap:
+          k.escape(body, s).flatMap:
             case (value, k, (lastConfig, _)) =>
               TUI.trace(lastConfig, label, value) &&! k(value)
 
-      override def pause[A, U <: ThisEffect](label: String)(body: A !! U)(using line: Line, file: File, mfs: MaybeFromString[A]) =
+      override def pauseEff[A, U <: ThisEffect](label: String)(body: A !! U)(using line: Line, file: File, mfs: MaybeFromString[A]) =
         (k, s) =>
-          k.escapeAndCapture(body, s).flatMap:
+          k.escape(body, s).flatMap:
             case (value, k, (lastConfig, lastBreakpoint)) =>
               new Breakpoint(
                 label = label,

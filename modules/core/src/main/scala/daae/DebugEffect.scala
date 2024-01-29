@@ -7,18 +7,18 @@ import daae.internals.{DebugHandler, Config}
 
 trait DebugSignature extends Signature:
   /** Creates breakpoint after execution of [[body]]. */
-  def pause[A, U <: ThisEffect](label: String)(body: A !! U)(using Line, File, MaybeFromString[A]): A !@! U
+  def pauseEff[A, U <: ThisEffect](label: String)(body: A !! U)(using Line, File, MaybeFromString[A]): A !@! U
 
-  /** Like [[pause]], except for it actually doesn't. */
-  def trace[A, U <: ThisEffect](label: String)(body: A !! U): A !@! U
+  /** Like [[pauseEff]], except for it actually doesn't. */
+  def traceEff[A, U <: ThisEffect](label: String)(body: A !! U): A !@! U
 
 
 trait DebugEffect extends Effect[DebugSignature] with DebugSignature:
-  final override def pause[A, U <: this.type](label: String)(body: A !! U)(using l: Line, f: File, mfs: MaybeFromString[A] = MaybeFromString.none): A !! U = perform(_.pause(label)(body))
-  final override def trace[A, U <: this.type](label: String)(body: A !! U): A !! U = perform(_.trace(label)(body))
+  final override def pauseEff[A, U <: this.type](label: String)(body: A !! U)(using l: Line, f: File, mfs: MaybeFromString[A] = MaybeFromString.none): A !! U = perform(_.pauseEff(label)(body))
+  final override def traceEff[A, U <: this.type](label: String)(body: A !! U): A !! U = perform(_.traceEff(label)(body))
 
-  final def pausePure[A](label: String)(value: => A)(using l: Line, f: File, mfs: MaybeFromString[A] = MaybeFromString.none): A !@! this.type = pause(label)(!!.impure(value))
-  final def tracePure[A](label: String)(value: => A): A !@! this.type = trace(label)(!!.impure(value))
+  final def pause[A](label: String)(value: => A)(using l: Line, f: File, mfs: MaybeFromString[A] = MaybeFromString.none): A !@! this.type = pauseEff(label)(!!.impure(value))
+  final def trace[A](label: String)(value: => A): A !@! this.type = traceEff(label)(!!.impure(value))
 
   /** Predefined handler for this effect. */
   final def handler(trace: Boolean = true, pause: Boolean = true): ThisHandler[[X] =>> X, [X] =>> X, Console & IO] =

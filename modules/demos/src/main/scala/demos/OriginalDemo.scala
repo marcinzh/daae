@@ -13,11 +13,11 @@ object OriginalDemo:
   def main(args: Array[String]): Unit =
     println:
       (for
-        x <- Debug.pausePure("x"):
+        x <- Debug.pause("x"):
           1 + 1
-        y <- Debug.pause("y"):
+        y <- Debug.pauseEff("y"):
           for
-            z <- Debug.pausePure("what's this?"):
+            z <- Debug.pause("what's this?"):
               99 + 1
           yield x + x + z
       yield x + y)
