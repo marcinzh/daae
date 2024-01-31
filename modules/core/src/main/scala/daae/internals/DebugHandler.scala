@@ -1,5 +1,5 @@
 package daae.internals
-import turbolift.{!!, Handler}
+import turbolift.!!
 import turbolift.Extensions._
 import turbolift.effects.{Console, IO}
 import sourcecode.{FileName => File, Line}
@@ -13,8 +13,8 @@ import daae.{DebugEffect, DebugSignature, MaybeFromString}
 case class Config(trace: Boolean = true, pause: Boolean = true)
 
 object DebugHandler:
-  def apply[Fx <: DebugEffect](fx: Fx, initial: Config): Handler[[X] =>> X, [X] =>> X, fx.type, Console & IO] =
-    new fx.impl.Stateful[[X] =>> X, Console & IO] with fx.impl.Sequential with DebugSignature:
+  def apply[Fx <: DebugEffect](fx: Fx, initial: Config): fx.ThisHandler.FromId.ToId[Console & IO] =
+    new fx.impl.Stateful.FromId.ToId[Console & IO] with fx.impl.Sequential with DebugSignature:
       override type Stan = (Config, Option[Breakpoint[?]])
 
       override def onInitial = (initial, None).pure_!!
