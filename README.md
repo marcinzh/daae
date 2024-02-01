@@ -1,3 +1,4 @@
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.marcinzh/daae-core_3/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.marcinzh/daae-core_3)
 # Debug as an Effect (DaaE)
 
 Tiny debugger, implemented with Algebraic Effects.
@@ -15,8 +16,17 @@ using [Turbolift](https://github.com/marcinzh/turbolift) effect system.
 
 ![image](img/screenshot.png)
 
-You can run included demo (translated to Scala from Unison) using `scala-cli`:
+---
 
+You can run included demos using `scala-cli`:
+
+1. [OriginalDemo](modules/demos/src/main/scala/demos/OriginalDemo.scala) - The original demo from [stepwise](https://share.unison-lang.org/@pchiusano/stepwise), shown in the video. Translated to Scala.
 ```bash
 scala-cli https://raw.githubusercontent.com/marcinzh/daae/master/modules/demos/src/main/scala/demos/OriginalDemo.scala  
+```
+
+
+2. [TreeWalk](modules/demos/src/main/scala/demos/TreeWalk.scala) - Using multiple effects.
+```bash
+scala-cli https://raw.githubusercontent.com/marcinzh/daae/master/modules/demos/src/main/scala/demos/TreeWalk.scala
 ```
