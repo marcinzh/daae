@@ -26,7 +26,7 @@ scala-cli https://raw.githubusercontent.com/marcinzh/daae/master/modules/demos/s
 ```
 
 
-2. [TreeWalk](modules/demos/src/main/scala/demos/TreeWalk.scala) - Using multiple effects.
+2. [TreeWalk](modules/demos/src/main/scala/demos/TreeWalk.scala) - Using multiple effects. Demonstrates that when `Debug` goes back in time, local state (e.g. `Reader`, `State`, `Writer`) gets restored as well.
 ```bash
 scala-cli https://raw.githubusercontent.com/marcinzh/daae/master/modules/demos/src/main/scala/demos/TreeWalk.scala
 ```
