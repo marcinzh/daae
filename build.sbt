@@ -20,7 +20,7 @@ val Deps = {
   object deps {
     val turbolift = "io.github.marcinzh" %% "turbolift-core" % "0.72.0"
     val sourcecode = "com.lihaoyi" %% "sourcecode" % "0.3.1"
-    val yamlist = "io.github.marcinzh" %% "yamlist" % "0.1.0"
+    val yamlist = "io.github.marcinzh" %% "yamlist" % "0.2.0"
   }
   deps
 }
