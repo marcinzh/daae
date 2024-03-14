@@ -14,7 +14,7 @@ object OriginalDemo:
     println:
       (for
         x <- Debug.pause("x"):
-          1 + 1
+          1 + 2  // As shown in the video. It's different in the repository linked above: `1 + 1`
         y <- Debug.pauseEff("y"):
           for
             z <- Debug.pause("what's this?"):
