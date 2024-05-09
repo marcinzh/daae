@@ -28,7 +28,7 @@ val Deps = {
 lazy val root = project
   .in(file("."))
   .settings(sourcesInBase := false)
-  .settings(dontPublishMe: _*)
+  .settings(publish / skip := true)
   .aggregate(core, demos)
 
 lazy val core = project
@@ -42,20 +42,13 @@ lazy val core = project
 lazy val demos = project
   .in(file("modules/demos"))
   .settings(name := "daae-demos")
-  .settings(dontPublishMe: _*)
+  .settings(publish / skip := true)
   .dependsOn(core)
   .settings(libraryDependencies ++= Seq(
     Deps.yamlist,
   ))
 
 //=================================================
-
-lazy val dontPublishMe = Seq(
-  publishTo := None,
-  publish := (()),
-  publishLocal := (()),
-  publishArtifact := false
-)
 
 ThisBuild / description := "Debug as an Effect (DaaE)"
 ThisBuild / organizationName := "marcinzh"
