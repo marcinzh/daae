@@ -6,9 +6,11 @@ import sourcecode.{FileName => File, Line}
 
 
 object TUI:
-  def trace(config: Config, label: String, value: => Any) =
-    !!.when(config.trace):
-      Console.println(s"${" Trace ".colored(C.tracefg, C.tracebg)} $label = ${value.toString}")
+  def trace(label: String, value: => Any) =
+    Console.println(s"${" Trace ".colored(C.tracefg, C.tracebg)} $label = ${value.toString}")
+
+  def pause(label: String, value: Any) =
+    Console.println(s"${" Pause ".colored(C.pausefg, C.pausebg)} $label = ${value.toString}")
 
   def show(prompt: String, config: Config, file: File, line: Line, canReplace: Boolean, canGoBack: Boolean): Unit !! Console =
     val lineFmt = "%-5d ".format(line.value)
@@ -86,6 +88,8 @@ object TUI:
     val vary      = 0xffdd00
     val highl     = 0x00ffff
     val tracefg   = 0xffffff
-    val tracebg   = 0x884488
+    val tracebg   = 0xcc6622
+    val pausefg   = 0xffffff
+    val pausebg   = 0x884488
     val titlefg   = 0xffffff
     val titlebg   = backg
