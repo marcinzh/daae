@@ -30,7 +30,7 @@ object TreeWalk:
           yield ()
       yield ()
 
-    def select: Handler.FromId.Free[Vector, Search] !! (Console & IO) =
+    def select: Handler[Identity, Vector, Search, Any] !! (Console & IO) =
       for
         _ <- Console.println("Select search order: (d)epth-first, or (b)readth-first")
         input <- Console.readln
@@ -45,7 +45,7 @@ object TreeWalk:
       .handleWith(h)
     .handleWith(Path.handler(Nil))
     .handleWith(Log.handler.justState)
-    .flatTap(xs => Console.println(s"Visited trees: ${xs.mkString(" ")}"))
+    .tapEff(xs => Console.println(s"Visited trees: ${xs.mkString(" ")}"))
     .handleWith(Debug.handler())
     .handleWith(Console.handler)
     .unsafeRun

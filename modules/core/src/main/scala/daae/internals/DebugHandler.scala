@@ -13,50 +13,51 @@ import daae.{DebugEffect, DebugSignature, MaybeFromString}
 case class Config(trace: Boolean = true, pause: Boolean = true)
 
 object DebugHandler:
-  def apply[Fx <: DebugEffect](fx: Fx, initial: Config): fx.ThisHandler.FromId.ToId[Console & IO] =
-    new fx.impl.Stateful.FromId.ToId[Console & IO] with fx.impl.Sequential with DebugSignature:
-      override type Stan = (Config, Option[Breakpoint[?]])
+  def apply[Fx <: DebugEffect](fx: Fx, initial: Config): fx.ThisHandler[Identity, Identity, Console & IO] =
+    new fx.impl.Stateful[Identity, Identity, Console & IO] with fx.impl.Sequential with DebugSignature:
+      override type Local = (Config, Option[Breakpoint[?]])
 
       override def onInitial = (initial, None).pure_!!
 
-      override def onReturn(a: Unknown, s: Stan) = a.pure_!!
+      override def onReturn(a: Unknown, s: Local) = a.pure_!!
 
       override def traceEff[A, U <: ThisEffect](label: String)(body: A !! U) =
-        (k, s) =>
-          k.escape(body, s).flatMap:
-            case (value, k, (lastConfig, _)) =>
-              TUI.trace(lastConfig, label, value) &&! k(value)
+        for
+          value <- body
+          config <- Local.gets(_._1)
+          _ <- TUI.trace(config, label, value)
+        yield value
 
       override def pauseEff[A, U <: ThisEffect](label: String)(body: A !! U)(using line: Line, file: File, mfs: MaybeFromString[A]) =
-        (k, s) =>
-          k.escape(body, s).flatMap:
-            case (value, k, (lastConfig, lastBreakpoint)) =>
-              new Breakpoint(
-                label = label,
-                value = value,
-                file = file,
-                line = line,
-                resumeRec = thisBreakpoint => (a, c) => k(a, (c, Some(thisBreakpoint))),
-                previous = lastBreakpoint,
-              )
-              .go(lastConfig)
+        body.flatMap: value =>
+          Control.captureGet: (k, s) =>
+            val (lastConfig, lastBreakpoint) = s
+            new Breakpoint(
+              label = label,
+              value = value,
+              file = file,
+              line = line,
+              resumeRec = thisBreakpoint => (a, c) => k.resume(a, (c, Some(thisBreakpoint))),
+              previous = lastBreakpoint,
+            )
+            .go(lastConfig)
 
       class Breakpoint[A](
         label: String,
         value: A,
         file: File,
         line: Line,
-        resumeRec: Breakpoint[A] => (A, Config) => Unknown !! Ambient,
+        resumeRec: Breakpoint[A] => (A, Config) => Unknown !! (Fx & Console & IO),
         previous: Option[Breakpoint[?]],
       )(using mfs: MaybeFromString[A]):
-        def go(config: Config): Unknown !! Ambient =
+        def go(config: Config): Unknown !! (Fx & Console & IO) =
           for
             _ <- TUI.trace(config, label, value)
             u <- 
               if !config.pause then
                 resume(value, config)
               else
-                def loop(config: Config, prompt: String = "Awaiting command"): Unknown !! Ambient =
+                def loop(config: Config, prompt: String = "Awaiting command"): Unknown !! (Fx & Console & IO) =
                   interact(config, prompt).map(_.toLowerCase).flatMap:
                     case "" => resume(value, config)
                     case "b" => previous match

@@ -1,6 +1,6 @@
 ThisBuild / organization := "io.github.marcinzh"
-ThisBuild / version := "0.2.0"
-ThisBuild / scalaVersion := "3.3.1"
+ThisBuild / version := "0.3.0-SNAPSHOT"
+ThisBuild / scalaVersion := "3.3.3"
 ThisBuild / crossScalaVersions := Seq(scalaVersion.value)
 
 ThisBuild / watchBeforeCommand := Watch.clearScreen
@@ -18,7 +18,7 @@ ThisBuild / scalacOptions ++= Seq(
 
 val Deps = {
   object deps {
-    val turbolift = "io.github.marcinzh" %% "turbolift-core" % "0.72.0"
+    val turbolift = "io.github.marcinzh" %% "turbolift-core" % "0.82.0"
     val sourcecode = "com.lihaoyi" %% "sourcecode" % "0.3.1"
     val yamlist = "io.github.marcinzh" %% "yamlist" % "0.2.0"
   }
