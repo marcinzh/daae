@@ -1,5 +1,5 @@
 //> using scala "3.3.1"
-//> using dep "io.github.marcinzh::daae-core:0.2.0"
+//> using dep "io.github.marcinzh::daae-core:0.4.0"
 //> using dep "io.github.marcinzh::yamlist:0.2.0"
 package demos
 import turbolift.{!!, Handler}
