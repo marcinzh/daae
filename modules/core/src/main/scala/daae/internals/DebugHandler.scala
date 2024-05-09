@@ -23,24 +23,31 @@ object DebugHandler:
 
       override def traceEff[A, U <: ThisEffect](label: String)(body: A !! U) =
         for
+          enabled <- Local.gets(_._1.trace)
           value <- body
-          config <- Local.gets(_._1)
-          _ <- !!.when(config.trace)(TUI.trace(label, value))
+          _ <- !!.when(enabled)(TUI.trace(label, value))
         yield value
 
       override def pauseEff[A, U <: ThisEffect](label: String)(body: A !! U)(using line: Line, file: File, mfs: MaybeFromString[A]) =
-        body.flatMap: value =>
-          Control.captureGet: (k, s) =>
-            val (lastConfig, lastBreakpoint) = s
-            new Breakpoint(
-              label = label,
-              value = value,
-              file = file,
-              line = line,
-              resumeRec = thisBreakpoint => (a, c) => k.resume(a, (c, Some(thisBreakpoint))),
-              previous = lastBreakpoint,
-            )
-            .go(lastConfig)
+        for
+          enabled <- Local.gets(_._1.pause)
+          value <- body
+          value2 <-
+            if !enabled then
+              value.pure_!!
+            else
+              Control.captureGet[A, Fx & Console & IO]: (k, s) =>
+                val (config, lastBreakpoint) = s
+                new Breakpoint(
+                  label = label,
+                  value = value,
+                  file = file,
+                  line = line,
+                  resumeRec = thisBreakpoint => (a, c) => k(a, (c, Some(thisBreakpoint))),
+                  previous = lastBreakpoint,
+                )
+                .go(config)
+        yield value2
 
       class Breakpoint[A](
         label: String,
@@ -51,28 +58,25 @@ object DebugHandler:
         previous: Option[Breakpoint[?]],
       )(using mfs: MaybeFromString[A]):
         def go(config: Config): Unknown !! (Fx & Console & IO) =
-          if !config.pause then
-            resume(value, config)
-          else
-            def loop(config: Config, value: A, prompt: String = "Awaiting command"): Unknown !! (Fx & Console & IO) =
-              interact(config, prompt).map(_.toLowerCase).flatMap:
-                case "" => resume(value, config)
-                case "b" => previous match
-                  case None => loop(config, value, "Can't go back before the first breakpoint")
-                  case Some(breakpoint) => breakpoint.go(config)
-                case "r" =>
-                  if mfs.isDefined then
-                    interact(config, "Enter new value to resume with").map(mfs.fromString).flatMap:
-                      case None => loop(config, value, "Invalid value")
-                      case Some(value2) => TUI.pause(label, value2) &&! loop(config, value2, "Value replaced")
-                  else
-                    loop(config, value, "Parser for values of this type is not available")
-                case "t" => loop(config.copy(trace = !config.trace), value)
-                case "p" => loop(config.copy(pause = !config.pause), value)
-                case "q" => IO.cancel
-                case x => loop(config, value, s"Invalid command `$x`, try again")
-            TUI.pause(label, value) &&!
-            loop(config, value)
+          def loop(config: Config, value: A, prompt: String = "Awaiting command"): Unknown !! (Fx & Console & IO) =
+            interact(config, prompt).map(_.toLowerCase).flatMap:
+              case "" => resume(value, config)
+              case "b" => previous match
+                case None => loop(config, value, "Can't go back before the first breakpoint")
+                case Some(breakpoint) => breakpoint.go(config)
+              case "r" =>
+                if mfs.isDefined then
+                  interact(config, "Enter new value to resume with").map(mfs.fromString).flatMap:
+                    case None => loop(config, value, "Invalid value")
+                    case Some(value2) => TUI.pause(label, value2) &&! loop(config, value2, "Value replaced")
+                else
+                  loop(config, value, "Parser for values of this type is not available")
+              case "t" => loop(config.copy(trace = !config.trace), value)
+              case "p" => loop(config.copy(pause = !config.pause), value)
+              case "q" => IO.cancel
+              case x => loop(config, value, s"Invalid command `$x`, try again")
+          TUI.pause(label, value) &&!
+          loop(config, value)
 
         private def resume = resumeRec(this)
 
