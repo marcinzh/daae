@@ -5,6 +5,7 @@ package demos
 import turbolift.{!!, Handler}
 import turbolift.Extensions._
 import turbolift.effects.{Choice, Reader, WriterK, Console, IO}
+import turbolift.bindless._
 import yamlist._
 import daae.Debug
 
@@ -19,36 +20,33 @@ object TreeWalk:
     type Path = Path.type
 
     def visit(tree: Tree): Unit !! (Search & Log & Path & Debug) =
-      for
-        label <- Debug.pause("label")(tree.label)
-        _ <- Log.tell(label)
-        _ <- Path.localModify(label :: _):
-          for
-            _ <- Debug.traceEff("path")(Path.asks(_.reverse.mkString("/")))
-            branch <- Search.choose(tree.branches)
-            _ <- visit(branch)
-          yield ()
-      yield ()
+      `do`:
+        val label = Debug.pause("label")(tree.label).!
+        Log.tell(label).!
+        Path.localModify(label :: _):
+          `do`:
+            val _ = Debug.traceEff("path")(Path.asks(_.reverse.mkString("/"))).!
+            val branch = Search.choose(tree.branches).!
+            visit(branch).!
+        .!
 
     def select: Handler[Identity, Vector, Search, Any] !! (Console & IO) =
-      for
-        _ <- Console.println("Select search order: (d)epth-first, or (b)readth-first")
-        input <- Console.readln
-        h <- input match
-          case ""|"d" => Search.handlers.all.pure_!!
-          case "b" => Search.handlers.allBreadthFirst.pure_!!
-          case _ => Console.println("Bye") &&! IO.cancel
-      yield h
+      `do`:
+        Console.println("Select search order: (d)epth-first, or (b)readth-first").!
+        Console.readln.! match
+          case ""|"d" => Search.handlers.all
+          case "b" => Search.handlers.allBreadthFirst
+          case _ => Console.println("Bye").!; IO.cancel.!
 
-    select.flatMap: h =>
-      visit(Tree.build)
-      .handleWith(h)
+    `do`:
+      val h = select.!
+      visit(Tree.build).handleWith(h).!
     .handleWith(Path.handler(Nil))
     .handleWith(Log.handler.justState)
     .tapEff(xs => Console.println(s"Visited trees: ${xs.mkString(" ")}"))
     .handleWith(Debug.handler())
     .handleWith(Console.handler)
-    .unsafeRun
+    .runIO
 
 
   //=======================================================================

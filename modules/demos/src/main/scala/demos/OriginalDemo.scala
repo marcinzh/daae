@@ -2,6 +2,7 @@
 //> using dep "io.github.marcinzh::daae-core:0.4.0"
 package demos
 import turbolift.effects.Console
+import turbolift.bindless._
 import daae.Debug
 
 //==========================================================================================
@@ -12,15 +13,18 @@ import daae.Debug
 object OriginalDemo:
   def main(args: Array[String]): Unit =
     println:
-      (for
-        x <- Debug.pause("x"):
+      `do`:
+        val x = Debug.pause("x"):
           1 + 2  // As shown in the video. It's different in the repository linked above: `1 + 1`
-        y <- Debug.pauseEff("y"):
-          for
-            z <- Debug.pause("what's this?"):
+        .!
+        val y = Debug.pauseEff("y"):
+          `do`:
+            val z = Debug.pause("what's this?"):
               99 + 1
-          yield x + x + z
-      yield x + y)
+            .!
+            x + x + z
+        .!
+        x + y
       .handleWith(Debug.handler(true, true))
       .handleWith(Console.handler)
-      .unsafeRun
+      .runIO

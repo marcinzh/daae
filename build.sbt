@@ -1,5 +1,5 @@
 ThisBuild / organization := "io.github.marcinzh"
-ThisBuild / version := "0.4.0"
+ThisBuild / version := "0.6.0"
 ThisBuild / scalaVersion := "3.3.3"
 ThisBuild / crossScalaVersions := Seq(scalaVersion.value)
 
@@ -17,8 +17,11 @@ ThisBuild / scalacOptions ++= Seq(
 )
 
 val Deps = {
+  val turbolift_v = "0.94.0"
+
   object deps {
-    val turbolift = "io.github.marcinzh" %% "turbolift-core" % "0.82.0"
+    val turbolift = "io.github.marcinzh" %% "turbolift-core" % turbolift_v
+    val bindless = "io.github.marcinzh" %% "turbolift-bindless" % turbolift_v
     val sourcecode = "com.lihaoyi" %% "sourcecode" % "0.3.1"
     val yamlist = "io.github.marcinzh" %% "yamlist" % "0.2.0"
   }
@@ -45,6 +48,7 @@ lazy val demos = project
   .settings(publish / skip := true)
   .dependsOn(core)
   .settings(libraryDependencies ++= Seq(
+    Deps.bindless,
     Deps.yamlist,
   ))
 
