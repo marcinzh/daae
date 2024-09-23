@@ -18,7 +18,7 @@ using [Turbolift](https://github.com/marcinzh/turbolift) effect system.
 
 ---
 
-You can run included demos using `scala-cli`:
+You can run included demos using [`scala-cli`](https://scala-cli.virtuslab.org/). Turbolift requires ⚠️**Java 11**⚠️ or newer.
 
 1. [OriginalDemo](modules/demos/src/main/scala/demos/OriginalDemo.scala) - The original demo from [stepwise](https://share.unison-lang.org/@pchiusano/stepwise), shown in the video. Translated to Scala.
 ```bash
