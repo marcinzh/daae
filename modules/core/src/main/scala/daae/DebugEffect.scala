@@ -1,5 +1,6 @@
 package daae
 import turbolift.{!!, Signature, Effect}
+import turbolift.Extensions._
 import turbolift.effects.{Console, IO}
 import sourcecode.{FileName => File, Line}
 import daae.internals.{DebugHandler, Config}

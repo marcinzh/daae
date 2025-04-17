@@ -36,17 +36,17 @@ object DebugHandler:
             if !enabled then
               value.pure_!!
             else
-              Control.captureGet[A, Fx & Console & IO]: (k, s) =>
-                val (config, lastBreakpoint) = s
-                new Breakpoint(
-                  label = label,
-                  value = value,
-                  file = file,
-                  line = line,
-                  resumeRec = thisBreakpoint => (a, c) => k(a, (c, Some(thisBreakpoint))),
-                  previous = lastBreakpoint,
-                )
-                .go(config)
+                Control.captureGet[A, Ambient & Console & IO]: (k, s) =>
+                  val (config, lastBreakpoint) = s
+                  new Breakpoint(
+                    label = label,
+                    value = value,
+                    file = file,
+                    line = line,
+                    resumeRec = thisBreakpoint => (a, c) => k(a, (c, Some(thisBreakpoint))),
+                    previous = lastBreakpoint,
+                  )
+                  .go(config)
         yield value2
 
       class Breakpoint[A](
@@ -54,11 +54,11 @@ object DebugHandler:
         value: A,
         file: File,
         line: Line,
-        resumeRec: Breakpoint[A] => (A, Config) => Unknown !! (Fx & Console & IO),
+        resumeRec: Breakpoint[A] => (A, Config) => Unknown !! (Ambient & Console & IO),
         previous: Option[Breakpoint[?]],
       )(using mfs: MaybeFromString[A]):
-        def go(config: Config): Unknown !! (Fx & Console & IO) =
-          def loop(config: Config, value: A, prompt: String = "Awaiting command"): Unknown !! (Fx & Console & IO) =
+        def go(config: Config): Unknown !! (Ambient & Console & IO) =
+          def loop(config: Config, value: A, prompt: String = "Awaiting command"): Unknown !! (Ambient & Console & IO) =
             interact(config, prompt).map(_.toLowerCase).flatMap:
               case "" => resume(value, config)
               case "b" => previous match

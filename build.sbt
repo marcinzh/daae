@@ -1,7 +1,9 @@
+val ScalaLTS = "3.3.5"
+val ScalaNext = "3.6.4"
 ThisBuild / organization := "io.github.marcinzh"
-ThisBuild / version := "0.6.0"
-ThisBuild / scalaVersion := "3.3.3"
-ThisBuild / crossScalaVersions := Seq(scalaVersion.value)
+ThisBuild / version := "0.8.0"
+ThisBuild / scalaVersion := ScalaLTS
+ThisBuild / crossScalaVersions := Seq(ScalaLTS, ScalaNext)
 
 ThisBuild / watchBeforeCommand := Watch.clearScreen
 ThisBuild / watchTriggeredMessage := Watch.clearScreenOnTrigger
@@ -13,11 +15,17 @@ ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
   "-Wnonunit-statement",
   "-Xfatal-warnings",
-  "-Ykind-projector:underscores",
 )
 
+ThisBuild / scalacOptions += (scalaVersion.value match {
+  case ScalaLTS => "-Ykind-projector:underscores"
+  case ScalaNext => "-Xkind-projector:underscores"
+})
+ThisBuild / publish / skip := (scalaVersion.value != ScalaLTS)
+
+
 val Deps = {
-  val turbolift_v = "0.94.0"
+  val turbolift_v = "0.110.0"
 
   object deps {
     val turbolift = "io.github.marcinzh" %% "turbolift-core" % turbolift_v
@@ -58,7 +66,7 @@ ThisBuild / description := "Debug as an Effect (DaaE)"
 ThisBuild / organizationName := "marcinzh"
 ThisBuild / homepage := Some(url("https://github.com/marcinzh/daae"))
 ThisBuild / scmInfo := Some(ScmInfo(url("https://github.com/marcinzh/daae"), "scm:git@github.com:marcinzh/daae.git"))
-ThisBuild / licenses := List("MIT" -> new URL("http://www.opensource.org/licenses/MIT"))
+ThisBuild / licenses := List("MIT" -> url("http://www.opensource.org/licenses/MIT"))
 ThisBuild / versionScheme := Some("semver-spec")
 ThisBuild / pomIncludeRepository := { _ => false }
 ThisBuild / publishMavenStyle := true
