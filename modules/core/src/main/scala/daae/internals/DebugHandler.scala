@@ -1,6 +1,7 @@
 package daae.internals
 import turbolift.!!
 import turbolift.Extensions._
+import turbolift.bindless._
 import turbolift.effects.{Console, IO}
 import sourcecode.{FileName => File, Line}
 import daae.{DebugEffect, DebugSignature, MaybeFromString}
@@ -22,32 +23,31 @@ object DebugHandler:
       override def onReturn(a: Unknown, s: Local) = a.pure_!!
 
       override def traceEff[A, U <: ThisEffect](label: String)(body: A !! U) =
-        for
-          enabled <- Local.gets(_._1.trace)
-          value <- body
-          _ <- !!.when(enabled)(TUI.trace(label, value))
-        yield value
+        `do`:
+          val (config, _) = Local.get.!
+          val value = body.!
+          if config.trace then TUI.trace(label, value).!
+          value
 
       override def pauseEff[A, U <: ThisEffect](label: String)(body: A !! U)(using line: Line, file: File, mfs: MaybeFromString[A]) =
-        for
-          enabled <- Local.gets(_._1.pause)
-          value <- body
-          value2 <-
-            if !enabled then
-              value.pure_!!
-            else
-                Control.captureGet[A, Ambient & Console & IO]: (k, s) =>
-                  val (config, lastBreakpoint) = s
-                  new Breakpoint(
-                    label = label,
-                    value = value,
-                    file = file,
-                    line = line,
-                    resumeRec = thisBreakpoint => (a, c) => k(a, (c, Some(thisBreakpoint))),
-                    previous = lastBreakpoint,
-                  )
-                  .go(config)
-        yield value2
+        `do`:
+          val (config, lastBreakpoint) = Local.get.!
+          val value = body.!
+          if !config.pause then
+            value
+          else
+            Control.captureGet[A, Ambient & Console & IO]: (k, s) =>
+              val (config, lastBreakpoint) = s
+              new Breakpoint(
+                label = label,
+                value = value,
+                file = file,
+                line = line,
+                resumeRec = thisBreakpoint => (a, c) => k(a, (c, Some(thisBreakpoint))),
+                previous = lastBreakpoint,
+              )
+              .go(config)
+            .!
 
       class Breakpoint[A](
         label: String,
@@ -66,25 +66,29 @@ object DebugHandler:
                 case Some(breakpoint) => breakpoint.go(config)
               case "r" =>
                 if mfs.isDefined then
-                  interact(config, "Enter new value to resume with").map(mfs.fromString).flatMap:
-                    case None => loop(config, value, "Invalid value")
-                    case Some(value2) => TUI.pause(label, value2) &&! loop(config, value2, "Value replaced")
+                  `do`:
+                    mfs.fromString(interact(config, "Enter new value to resume with").!) match
+                      case None => loop(config, value, "Invalid value").!
+                      case Some(value2) =>
+                        TUI.pause(label, value2).!
+                        loop(config, value2, "Value replaced").!
                 else
                   loop(config, value, "Parser for values of this type is not available")
               case "t" => loop(config.copy(trace = !config.trace), value)
               case "p" => loop(config.copy(pause = !config.pause), value)
               case "q" => IO.cancel
               case x => loop(config, value, s"Invalid command `$x`, try again")
-          TUI.pause(label, value) &&!
-          loop(config, value)
+          `do`:
+            TUI.pause(label, value).!
+            loop(config, value).!
 
         private def resume = resumeRec(this)
 
         private def interact(config: Config, prompt: String): String !! Console =
-          for
-            _ <- TUI.show(prompt, config, file, line, canReplace = mfs.isDefined, canGoBack = previous.isDefined)
-            input <- Console.readln
-            _ <- TUI.hide
-          yield input
+          `do`:
+            TUI.show(prompt, config, file, line, canReplace = mfs.isDefined, canGoBack = previous.isDefined).!
+            val input = Console.readln.!
+            TUI.hide.!
+            input
 
     .toHandler

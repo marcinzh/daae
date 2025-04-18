@@ -47,6 +47,7 @@ lazy val core = project
   .settings(name := "daae-core")
   .settings(libraryDependencies ++= Seq(
     Deps.turbolift,
+    Deps.bindless,
     Deps.sourcecode,
   ))
 
