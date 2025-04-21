@@ -1,5 +1,5 @@
-//> using scala "3.3.1"
-//> using dep "io.github.marcinzh::daae-core:0.4.0"
+//> using scala "3.3.5"
+//> using dep "io.github.marcinzh::daae-core:0.8.0"
 package demos
 import turbolift.effects.Console
 import turbolift.bindless._
