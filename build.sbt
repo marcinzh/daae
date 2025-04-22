@@ -20,6 +20,7 @@ ThisBuild / scalacOptions ++= Seq(
 ThisBuild / scalacOptions += (scalaVersion.value match {
   case ScalaLTS => "-Ykind-projector:underscores"
   case ScalaNext => "-Xkind-projector:underscores"
+  case _ => "-Ykind-projector:underscores"
 })
 ThisBuild / publish / skip := (scalaVersion.value != ScalaLTS)
 
